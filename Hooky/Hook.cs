@@ -57,17 +57,19 @@ namespace Hooky
 
         public T Call<T>(object instance, object[] parameters)
         {
-            Disable();
+            var isHooked = Enabled;
+            if (isHooked) Disable();
             var temp = _from.Invoke(instance, parameters);
-            Enable();
+            if (isHooked) Enable();
             return (T) temp;
         }
 
         public void Call(object instance, object[] parameters)
         {
-            Disable();
+            var isHooked = Enabled;
+            if (isHooked) Disable();
             _from.Invoke(instance, parameters);
-            Enable();
+            if (isHooked) Enable();
         }
         
         ~Hook()
