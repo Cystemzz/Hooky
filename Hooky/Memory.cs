@@ -7,7 +7,7 @@ namespace Hooky
     public static class Memory
     {
         [DllImport("Kernel32.dll", EntryPoint = "VirtualProtect")]
-        public static extern bool VirtualProtect(IntPtr address, uint size, uint flNewProtect, out uint flOldProtect);
+        private static extern bool VirtualProtect(IntPtr address, uint size, uint flNewProtect, out uint flOldProtect);
 
         public static void WriteBytes(IntPtr address, byte[] bytes)
         {

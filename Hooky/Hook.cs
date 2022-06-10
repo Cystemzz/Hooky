@@ -20,7 +20,7 @@ namespace Hooky
 
         public void Enable()
         {
-            if (Enabled) throw new Exception("Method already hooked.");
+            if (Enabled) throw new NotSupportedException("Method already hooked.");
             Enabled = true;
             RuntimeHelpers.PrepareMethod(_from.MethodHandle);
             RuntimeHelpers.PrepareMethod(_to.MethodHandle);
@@ -28,29 +28,26 @@ namespace Hooky
             var fromPtr = _from.MethodHandle.GetFunctionPointer();
             var toPtr = _to.MethodHandle.GetFunctionPointer();
 
-            switch (_is64Bit)
+            if (_is64Bit)
             {
-                case true:
-                    _originalMethod = Memory.ReadBytes(fromPtr, 13);
-                    Memory.WriteByte(fromPtr, 0x49);
-                    Memory.WriteByte(fromPtr + 1, 0xbb);
-                    Memory.WriteLong(fromPtr + 2, toPtr.ToInt64());
-                    Memory.WriteByte(fromPtr + 10, 0x41);
-                    Memory.WriteByte(fromPtr + 11, 0xff);
-                    Memory.WriteByte(fromPtr + 12, 0xe3);
-                    break;
-                case false:
-                    _originalMethod = Memory.ReadBytes(fromPtr, 6);
-                    Memory.WriteByte(fromPtr, 0xe9);
-                    Memory.WriteInt(fromPtr + 1, toPtr.ToInt32() - fromPtr.ToInt32() - 5);
-                    Memory.WriteByte(fromPtr + 5, 0xc3);
-                    break;
+                _originalMethod = Memory.ReadBytes(fromPtr, 13);
+                Memory.WriteByte(fromPtr, 0x49);
+                Memory.WriteByte(fromPtr + 1, 0xbb);
+                Memory.WriteLong(fromPtr + 2, toPtr.ToInt64());
+                Memory.WriteByte(fromPtr + 10, 0x41);
+                Memory.WriteByte(fromPtr + 11, 0xff);
+                Memory.WriteByte(fromPtr + 12, 0xe3);
+                return;
             }
+            _originalMethod = Memory.ReadBytes(fromPtr, 6);
+            Memory.WriteByte(fromPtr, 0xe9);
+            Memory.WriteInt(fromPtr + 1, toPtr.ToInt32() - fromPtr.ToInt32() - 5);
+            Memory.WriteByte(fromPtr + 5, 0xc3);
         }
 
         public void Disable()
         {
-            if (!Enabled) throw new Exception("Method not hooked.");
+            if (!Enabled) throw new NotSupportedException("Method not hooked.");
             Enabled = false;
             Memory.WriteBytes(_from.MethodHandle.GetFunctionPointer(), _originalMethod);
         }
